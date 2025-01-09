@@ -1,0 +1,96 @@
+use std::env;
+mod csv;
+use std::fs;
+
+fn main() {
+    println!("Welcome to Splitter! Splitter is a tool for splitting large datasets into chunks.");
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() < 2 {
+        eprintln!("Arguments can't be less than one. File must be specified.");
+        return;
+    }
+
+    let file_path = file_argument_handler(&args);
+
+    // check if file exists before we continue proceeding
+    if !fs::exists(file_path).expect("Couldn't check if file exists or not.") {
+        eprintln!("File path doesn't exist. Please input a correct file path.");
+        return;
+    }
+
+    let parts: Vec<_> = file_path.split('.').collect(); // Create a longer-lived Vec
+    let file_extension = parts.last().expect("Couldn't get file extension.");
+
+    // Get document name and chunk size if they exist.
+    let (document_name, chunk_size, half) = check_for_additional_arguments(&args);
+
+    let chunk_size = megabytes_to_bytes(chunk_size);
+
+    handle_different_file_extensions(file_extension, chunk_size, document_name.as_str(), file_path, half);
+}
+
+fn file_argument_handler(args: &Vec<String>) -> &str {
+    // handle and get the file argument
+
+    if let Some(index) = args.iter().position(|arg| arg == "-file") {
+        if let Some(file_path) = args.get(index + 1) {
+            return file_path.as_str();
+        } else {
+            eprintln!("Error: No file path provided after '-file'");
+            return "None";
+        }
+    }
+    else {
+        return "None";
+    }
+}
+
+fn megabytes_to_bytes(megabytes: usize) -> usize {
+    // convert a decimal number to megabytes for later splitting
+    megabytes * 1024 * 1024
+}
+
+fn handle_different_file_extensions(file_extension: &str, chunk_size: usize, document_name: &str, file_path: &str, half: bool) {
+    // function maps the file extension with the correct function for it
+
+    if file_extension == "csv" {
+        if half {
+            if let Err(e) = csv::split_csv_to_half(file_path) {
+                eprintln!("Error occured splitting CSV file into half: {e}");
+            };
+        } else {
+            if let Err(e) = csv::read_csv(file_path, chunk_size, document_name) { 
+                eprintln!("Error occured splitting CSV file: {e}");
+            };
+        }
+    }
+}
+
+fn check_for_additional_arguments(args: &Vec<String>) -> (String, usize, bool) {
+    // Function to get any additional arguments if they were specified by the user
+
+    let mut returned_values: (String, usize, bool) = ("splitted_dataset".to_string(), 100, false);
+
+    if let Some(index) = args.iter().position(|arg| arg == "-name") {
+        if let Some(document_name) = args.get(index + 1) {
+            returned_values.0 = document_name.clone();
+        } else {
+            println!("No name specified. Defaulting to splitted_dataset.");
+        }    
+    }
+
+    if let Some(index) = args.iter().position(|arg| arg == "-size") {
+        if let Some(chunk_size) = args.get(index + 1) {
+            returned_values.1 = chunk_size.parse().unwrap_or(100);
+        } 
+    } else {
+        println!("No size specified, splitting every 100 Megabytes.\n");
+    }
+
+    if args.iter().any(|arg| arg == "-half") {
+        returned_values.2 = true; 
+    }
+
+    return returned_values;
+}
