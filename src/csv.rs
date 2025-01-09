@@ -7,9 +7,9 @@ use std::fs;
 
 pub fn read_csv(file_path: &str, chunk_size: usize, document_name: &str) -> Result<()>{
 
- //   let cwd = std::env::current_dir().unwrap().expect("Couldn't get current working directory.");
-
-    fs::create_dir_all(document_name).expect("Couldn't create a directory.");
+    if let Err(e) = fs::create_dir_all(&document_name) {
+        eprintln!("Couldn't create folder for the splitted dataset: {e}");
+    }
     
     let file = File::open(file_path).expect("Problem with reading the file.");
 
@@ -75,12 +75,12 @@ pub fn read_csv(file_path: &str, chunk_size: usize, document_name: &str) -> Resu
     Ok(())
 }
 
-pub fn split_csv_to_half(file_path: &str) -> Result<()> {
+pub fn split_csv_to_half(file_path: &str, document_name: &str) -> Result<()> {
 
     // function splits a csv file into two halves if the user specified.
     // similar to the read_csv function
 
-    fs::create_dir_all("splitted_dataset").expect("Couldn't create a directory.");
+    fs::create_dir_all(document_name).expect("Couldn't create a directory.");
 
     let file = File::open(file_path).expect("Couldn't open file.");
 
@@ -97,7 +97,7 @@ pub fn split_csv_to_half(file_path: &str) -> Result<()> {
     let first_half = &data[..midpoint];
     let second_half = &data[midpoint..];
 
-    let path = Path::new("").join("splitted_dataset").join("fist_split.csv");
+    let path = Path::new("").join(document_name).join("fist_split.csv");
 
     let mut writer1 = Writer::from_path(path)?;
 
@@ -110,7 +110,7 @@ pub fn split_csv_to_half(file_path: &str) -> Result<()> {
 
     writer1.flush().expect("Couldn't write data.");
 
-    let path = Path::new("").join("splitted_dataset").join("second_split.csv");
+    let path = Path::new("").join(document_name).join("second_split.csv");
 
     let mut writer2 = Writer::from_path(path).unwrap();
 

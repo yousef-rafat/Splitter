@@ -1,13 +1,17 @@
 use std::env;
 mod csv;
+mod json;
 use std::fs;
-
+// json file path "C:\Users\yrafa\Downloads\US_recipes.json\US_recipes.json"
 fn main() {
-    println!("Welcome to Splitter! Splitter is a tool for splitting large datasets into chunks.");
+
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
-        eprintln!("Arguments can't be less than one. File must be specified.");
+        println!("Welcome to Splitter! Splitter is a tool for splitting large datasets into chunks.\n");
+        println!("To start splitting the dataset, specify the file using -file [FILE_DIR]\n");
+        println!("To specify the chunk size, use -size [NUMBER_IN_MEGABYTES]\n");
+        println!("To specify the name of splitted dataset folder, use -name [NAME]\n");
         return;
     }
 
@@ -56,11 +60,23 @@ fn handle_different_file_extensions(file_extension: &str, chunk_size: usize, doc
 
     if file_extension == "csv" {
         if half {
-            if let Err(e) = csv::split_csv_to_half(file_path) {
+            if let Err(e) = csv::split_csv_to_half(file_path, document_name) {
                 eprintln!("Error occured splitting CSV file into half: {e}");
             };
         } else {
             if let Err(e) = csv::read_csv(file_path, chunk_size, document_name) { 
+                eprintln!("Error occured splitting CSV file: {e}");
+            };
+        }
+    }
+
+    if file_extension == "json" {
+        if half {
+            if let Err(e) = json::split_json_half(file_path, document_name) {
+                eprintln!("Error occured splitting JSON file into half: {e}");
+            }
+        } else {
+            if let Err(e) = json::split_json(file_path, document_name, chunk_size) { 
                 eprintln!("Error occured splitting CSV file: {e}");
             };
         }
@@ -80,16 +96,18 @@ fn check_for_additional_arguments(args: &Vec<String>) -> (String, usize, bool) {
         }    
     }
 
+    if args.iter().any(|arg| arg == "-half") {
+        returned_values.2 = true; 
+    }
+
     if let Some(index) = args.iter().position(|arg| arg == "-size") {
         if let Some(chunk_size) = args.get(index + 1) {
             returned_values.1 = chunk_size.parse().unwrap_or(100);
         } 
     } else {
-        println!("No size specified, splitting every 100 Megabytes.\n");
-    }
-
-    if args.iter().any(|arg| arg == "-half") {
-        returned_values.2 = true; 
+        if returned_values.2 == false {
+            println!("No size specified, splitting every 100 Megabytes.\n");
+        }
     }
 
     return returned_values;
