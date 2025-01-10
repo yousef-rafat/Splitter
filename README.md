@@ -1,4 +1,4 @@
-![Splitter](https://github.com/user-attachments/assets/fb66934f-e898-462f-9adb-74587c797244)
+![Splitter](https://github.com/user-attachments/assets/e57ad76e-97a9-4ff7-a0fa-014777f0dd40)
 
 # Splitter
 
