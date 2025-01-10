@@ -3,7 +3,7 @@ mod csv;
 mod json;
 mod txt;
 use std::fs;
-// json file path "C:\Users\yrafa\Downloads\US_recipes.json\US_recipes.json"
+// json file path C:\Users\yrafa\Downloads\test.txt
 fn main() {
 
     let args: Vec<String> = env::args().collect();
