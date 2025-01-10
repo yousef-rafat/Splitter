@@ -1,6 +1,7 @@
 use std::env;
 mod csv;
 mod json;
+mod txt;
 use std::fs;
 // json file path "C:\Users\yrafa\Downloads\US_recipes.json\US_recipes.json"
 fn main() {
@@ -55,30 +56,52 @@ fn megabytes_to_bytes(megabytes: usize) -> usize {
     megabytes * 1024 * 1024
 }
 
-fn handle_different_file_extensions(file_extension: &str, chunk_size: usize, document_name: &str, file_path: &str, half: bool) {
-    // function maps the file extension with the correct function for it
+fn handle_different_file_extensions(
+    file_extension: &str,
+    chunk_size: usize,
+    document_name: &str,
+    file_path: &str,
+    half: bool,
+) {
+    match file_extension {
 
-    if file_extension == "csv" {
-        if half {
-            if let Err(e) = csv::split_csv_to_half(file_path, document_name) {
-                eprintln!("Error occured splitting CSV file into half: {e}");
-            };
-        } else {
-            if let Err(e) = csv::read_csv(file_path, chunk_size, document_name) { 
-                eprintln!("Error occured splitting CSV file: {e}");
-            };
-        }
-    }
-
-    if file_extension == "json" {
-        if half {
-            if let Err(e) = json::split_json_half(file_path, document_name) {
-                eprintln!("Error occured splitting JSON file into half: {e}");
+        "csv" => {
+            if half {
+                if let Err(e) = csv::split_csv_to_half(file_path, document_name) {
+                    eprintln!("Error occurred splitting CSV file into half: {e}");
+                }
+            } else {
+                if let Err(e) = csv::read_csv(file_path, chunk_size, document_name) {
+                    eprintln!("Error occurred splitting CSV file: {e}");
+                }
             }
-        } else {
-            if let Err(e) = json::split_json(file_path, document_name, chunk_size) { 
-                eprintln!("Error occured splitting CSV file: {e}");
-            };
+        }
+
+        "json" => {
+            if half {
+                if let Err(e) = json::split_json_half(file_path, document_name) {
+                    eprintln!("Error occurred splitting JSON file into half: {e}");
+                }
+            } else {
+                if let Err(e) = json::split_json(file_path, document_name, chunk_size) {
+                    eprintln!("Error occurred splitting JSON file: {e}");
+                }
+            }
+        }
+
+        "txt" => {
+            if half {
+                if let Err(e) = txt::split_text_half(file_path, document_name) {
+                    eprintln!("Error occurred splitting JSON file into half: {e}");
+                }
+            } else {
+                if let Err(e) = txt::split_text(file_path, document_name, chunk_size) {
+                    eprintln!("Error occurred splitting JSON file: {e}");
+                }
+            }
+        }
+        _ => {
+            eprintln!("Unsupported file extension: {file_extension}");
         }
     }
 }
