@@ -12,11 +12,17 @@ fn main() {
         println!("Welcome to Splitter! Splitter is a tool for splitting large datasets into chunks.\n");
         println!("To start splitting the dataset, specify the file using -file [FILE_DIR]\n");
         println!("To specify the chunk size, use -size [NUMBER_IN_MEGABYTES]\n");
+        println!("To split a file in half, you can use -half instead of -size\n");
         println!("To specify the name of splitted dataset folder, use -name [NAME]\n");
         return;
     }
 
     let file_path = file_argument_handler(&args);
+
+    if file_path == "None" {
+        println!("A file must be inputted for splitting.");
+        return;
+    }
 
     // check if file exists before we continue proceeding
     if !fs::exists(file_path).expect("Couldn't check if file exists or not.") {
